@@ -27,7 +27,7 @@ COLOR_MAPPING = {
 
 def parse_filename_timestamp(func):
     """Parse timestamp from default rec filename format."""
-    if not func.startswith('rec.') or not func.endswith(MGZ_EXT) or len(func) != 23:
+    if not func.lower().startswith('rec.') or not func.endswith(MGZ_EXT) or len(func) != 23:
         return None
     return datetime(
         year=int(func[4:8]),
