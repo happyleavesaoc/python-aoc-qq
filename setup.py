@@ -2,8 +2,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='aocqq',
-    version='0.0.1',
+    name='python-aoc-qq',
+    version='1.0.1',
     description='AoC QQ API',
     url='https://github.com/happyleavesaoc/python-aoc-qq/',
     license='MIT',
@@ -12,7 +12,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         'beautifulsoup4>=4.6.3',
-        'lxml>=4.3.0',
         'requests>=2.20.1'
     ],
     classifiers=[

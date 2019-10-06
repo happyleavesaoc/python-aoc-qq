@@ -46,7 +46,7 @@ def get_ladder(session, ladder, start=0, limit=LADDER_RANKS_LIMIT):
     done = False
     while not done and page_id < MAX_RANK_PAGE_ID:
         html = session.get('{}/ladder/{}?page={}'.format(BASE_URL, ladder, page_id))
-        parsed = bs4.BeautifulSoup(html.text, features='lxml')
+        parsed = bs4.BeautifulSoup(html.text, features='html.parser')
         tbody = parsed.find('table', {
             'class': 'text-center pure-table pure-table-horizontal'
         }).find('tbody')
@@ -79,7 +79,7 @@ def _get_matches(session, params, limit):
     while not done and page_id < MAX_MATCH_PAGE_ID:
         html = session.get('{}/list?is_query=yes&version=UP15&page={}&{}'.format(
             BASE_URL, page_id, params))
-        parsed = bs4.BeautifulSoup(html.text, features='lxml')
+        parsed = bs4.BeautifulSoup(html.text, features='html.parser')
         tbody = parsed.find('table', {
             'class': 'text-center pure-table pure-table-horizontal'
         }).find('tbody')
@@ -112,7 +112,7 @@ def get_ladder_matches(session, ladder, limit=MATCH_LIMIT):
 def get_match(session, match_id): # pylint: disable=too-many-locals
     """Get match data."""
     html = session.get('{}/{}'.format(BASE_URL, match_id))
-    parsed = bs4.BeautifulSoup(html.text, features='lxml')
+    parsed = bs4.BeautifulSoup(html.text, features='html.parser')
     players = []
     ladders = set()
     wrapper = parsed.find('div', {'class': 'player-info-wrapper'})
