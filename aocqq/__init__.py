@@ -13,6 +13,7 @@ MAX_RANK_PAGE_ID = 10
 MAX_MATCH_PAGE_ID = 10
 LADDER_RANKS_LIMIT = 50
 MATCH_LIMIT = 10
+REQ_TIMEOUT = 5
 COLOR_MAPPING = {
     '#0000ff': 0,
     '#ff0000': 1,
@@ -45,7 +46,10 @@ def get_ladder(session, ladder, start=0, limit=LADDER_RANKS_LIMIT):
     page_id = 1
     done = False
     while not done and page_id < MAX_RANK_PAGE_ID:
-        html = session.get('{}/ladder/{}?page={}'.format(BASE_URL, ladder, page_id))
+        html = session.get(
+            '{}/ladder/{}?page={}'.format(BASE_URL, ladder, page_id),
+            timeout=REQ_TIMEOUT
+        )
         parsed = bs4.BeautifulSoup(html.text, features='html.parser')
         tbody = parsed.find('table', {
             'class': 'text-center pure-table pure-table-horizontal'
@@ -78,7 +82,7 @@ def _get_matches(session, params, limit):
     matches = []
     while not done and page_id < MAX_MATCH_PAGE_ID:
         html = session.get('{}/list?is_query=yes&version=UP15&page={}&{}'.format(
-            BASE_URL, page_id, params))
+            BASE_URL, page_id, params), timeout=REQ_TIMEOUT)
         parsed = bs4.BeautifulSoup(html.text, features='html.parser')
         tbody = parsed.find('table', {
             'class': 'text-center pure-table pure-table-horizontal'
@@ -111,7 +115,7 @@ def get_ladder_matches(session, ladder, limit=MATCH_LIMIT):
 
 def get_match(session, match_id): # pylint: disable=too-many-locals
     """Get match data."""
-    html = session.get('{}/{}'.format(BASE_URL, match_id))
+    html = session.get('{}/{}'.format(BASE_URL, match_id), timeout=REQ_TIMEOUT)
     parsed = bs4.BeautifulSoup(html.text, features='html.parser')
     players = []
     ladders = set()
@@ -147,7 +151,7 @@ def get_match(session, match_id): # pylint: disable=too-many-locals
 
 def download_rec(session, rec_url, target_path):
     """Download and extract a recorded game."""
-    resp = session.get(rec_url)
+    resp = session.get(rec_url, timeout=REQ_TIMEOUT)
     downloaded = zipfile.ZipFile(io.BytesIO(resp.content))
     downloaded.extractall(target_path)
     return downloaded.namelist()[0] # never more than one rec
