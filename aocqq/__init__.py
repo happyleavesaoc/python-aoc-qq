@@ -6,6 +6,8 @@ from datetime import datetime
 
 import bs4
 import requests
+from requests.exceptions import RequestException
+
 
 MGZ_EXT = '.mgz'
 BASE_URL = 'http://aocrec.com'
@@ -13,7 +15,7 @@ MAX_RANK_PAGE_ID = 10
 MAX_MATCH_PAGE_ID = 10
 LADDER_RANKS_LIMIT = 50
 MATCH_LIMIT = 10
-REQ_TIMEOUT = 5
+REQ_TIMEOUT = 15
 COLOR_MAPPING = {
     '#0000ff': 0,
     '#ff0000': 1,
@@ -24,6 +26,12 @@ COLOR_MAPPING = {
     '#434343': 6,
     '#ff8201': 7
 }
+
+
+class AOCQQError(Exception):
+    """AOC QQ error."""
+
+    pass
 
 
 def parse_filename_timestamp(func):
@@ -46,10 +54,13 @@ def get_ladder(session, ladder, start=0, limit=LADDER_RANKS_LIMIT):
     page_id = 1
     done = False
     while not done and page_id < MAX_RANK_PAGE_ID:
-        html = session.get(
-            '{}/ladder/{}?page={}'.format(BASE_URL, ladder, page_id),
-            timeout=REQ_TIMEOUT
-        )
+        try:
+            html = session.get(
+                '{}/ladder/{}?page={}'.format(BASE_URL, ladder, page_id),
+                timeout=REQ_TIMEOUT
+            )
+        except RequestException:
+            raise AOCQQError('could not connect')
         parsed = bs4.BeautifulSoup(html.text, features='html.parser')
         tbody = parsed.find('table', {
             'class': 'text-center pure-table pure-table-horizontal'
@@ -81,8 +92,11 @@ def _get_matches(session, params, limit):
     done = False
     matches = []
     while not done and page_id < MAX_MATCH_PAGE_ID:
-        html = session.get('{}/list?is_query=yes&version=UP15&page={}&{}'.format(
-            BASE_URL, page_id, params), timeout=REQ_TIMEOUT)
+        try:
+            html = session.get('{}/list?is_query=yes&version=UP15&page={}&{}'.format(
+                BASE_URL, page_id, params), timeout=REQ_TIMEOUT)
+        except RequestException:
+            raise AOCQQError('could not connect')
         parsed = bs4.BeautifulSoup(html.text, features='html.parser')
         tbody = parsed.find('table', {
             'class': 'text-center pure-table pure-table-horizontal'
@@ -115,7 +129,10 @@ def get_ladder_matches(session, ladder, limit=MATCH_LIMIT):
 
 def get_match(session, match_id): # pylint: disable=too-many-locals
     """Get match data."""
-    html = session.get('{}/{}'.format(BASE_URL, match_id), timeout=REQ_TIMEOUT)
+    try:
+        html = session.get('{}/{}'.format(BASE_URL, match_id), timeout=REQ_TIMEOUT)
+    except RequestException:
+        raise AOCQQError('could not connect')
     parsed = bs4.BeautifulSoup(html.text, features='html.parser')
     players = []
     ladders = set()
@@ -151,7 +168,15 @@ def get_match(session, match_id): # pylint: disable=too-many-locals
 
 def download_rec(session, rec_url, target_path):
     """Download and extract a recorded game."""
-    resp = session.get(rec_url, timeout=REQ_TIMEOUT)
+    try:
+        resp = session.get(rec_url, timeout=REQ_TIMEOUT)
+    except RequestError:
+        raise AOCQQError('could not connect')
     downloaded = zipfile.ZipFile(io.BytesIO(resp.content))
     downloaded.extractall(target_path)
     return downloaded.namelist()[0] # never more than one rec
+
+
+def get_session():
+    """Get a new HTTP session."""
+    return requests.session()
