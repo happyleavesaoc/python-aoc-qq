@@ -138,6 +138,8 @@ def get_match(session, match_id): # pylint: disable=too-many-locals
     ladders = set()
     wrapper = parsed.find('div', {'class': 'player-info-wrapper'})
     url_elem = parsed.find('a', {'class': 'download-link'})
+    if url_elem is None:
+        raise AOCQQError('could not find download link')
     url = url_elem['href'].strip()
     owner = ''.join(url_elem.find_all(text=True, recursive=False)).strip()
     filename = url_elem.find_next('span', {'class': 'badge-normal badge-aoc'}).text.strip()
