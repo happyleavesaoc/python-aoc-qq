@@ -172,7 +172,7 @@ def download_rec(session, rec_url, target_path):
     """Download and extract a recorded game."""
     try:
         resp = session.get(rec_url, timeout=REQ_TIMEOUT)
-    except RequestError:
+    except RequestException:
         raise AOCQQError('could not connect')
     downloaded = zipfile.ZipFile(io.BytesIO(resp.content))
     downloaded.extractall(target_path)

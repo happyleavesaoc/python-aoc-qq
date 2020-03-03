@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='python-aoc-qq',
-    version='1.0.3',
+    version='1.0.4',
     description='AoC QQ API',
     url='https://github.com/happyleavesaoc/python-aoc-qq/',
     license='MIT',
